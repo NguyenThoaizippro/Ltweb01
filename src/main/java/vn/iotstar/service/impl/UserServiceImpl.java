@@ -2,7 +2,7 @@ package vn.iotstar.service.impl;
 
 import vn.iotstar.dao.UserDao;
 import vn.iotstar.dao.impl.UserDaoImpl;
-import vn.iotstar.model.User;
+import vn.iotstar.entity.User;
 import vn.iotstar.service.OtpService;
 import vn.iotstar.service.UserService;
 import vn.iotstar.util.PasswordUtil;

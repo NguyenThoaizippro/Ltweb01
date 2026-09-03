@@ -1,4 +1,4 @@
-package vn.iotstar.model;
+package vn.iotstar.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
@@ -35,7 +35,7 @@ public class User implements Serializable {
     private String avatar;
 
     @Column(name = "roleid")
-    private int roleid = 3;
+    private Integer roleid = 3;
 
     @Column(name = "phone", length = 20)
     private String phone;
@@ -44,12 +44,12 @@ public class User implements Serializable {
     private Date createdDate;
 
     @Column(name = "isActive")
-    private int isActive = 1;
+    private Integer isActive = 1;
 
     public User() {
     }
 
-    public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
+    public User(int id, String email, String userName, String fullName, String passWord, String avatar, Integer roleid,
             String phone, Date createdDate) {
         this.id = id;
         this.email = email;
@@ -57,24 +57,24 @@ public class User implements Serializable {
         this.fullName = fullName;
         this.passWord = passWord;
         this.avatar = avatar;
-        this.roleid = roleid;
+        this.roleid = roleid != null ? roleid : 3;
         this.phone = phone;
         this.createdDate = createdDate;
         this.isActive = 1;
     }
 
-    public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
-            String phone, Date createdDate, int isActive) {
+    public User(int id, String email, String userName, String fullName, String passWord, String avatar, Integer roleid,
+            String phone, Date createdDate, Integer isActive) {
         this.id = id;
         this.email = email;
         this.userName = userName;
         this.fullName = fullName;
         this.passWord = passWord;
         this.avatar = avatar;
-        this.roleid = roleid;
+        this.roleid = roleid != null ? roleid : 3;
         this.phone = phone;
         this.createdDate = createdDate;
-        this.isActive = isActive;
+        this.isActive = isActive != null ? isActive : 1;
     }
 
     public int getId() {
@@ -133,11 +133,11 @@ public class User implements Serializable {
         this.avatar = images;
     }
 
-    public int getRoleid() {
-        return roleid;
+    public Integer getRoleid() {
+        return roleid != null ? roleid : 3;
     }
 
-    public void setRoleid(int roleid) {
+    public void setRoleid(Integer roleid) {
         this.roleid = roleid;
     }
 
@@ -157,11 +157,11 @@ public class User implements Serializable {
         this.createdDate = createdDate;
     }
 
-    public int getIsActive() {
-        return isActive;
+    public Integer getIsActive() {
+        return isActive != null ? isActive : 1;
     }
 
-    public void setIsActive(int isActive) {
+    public void setIsActive(Integer isActive) {
         this.isActive = isActive;
     }
 }

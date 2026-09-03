@@ -1,6 +1,6 @@
 package vn.iotstar.service;
 
-import vn.iotstar.model.User;
+import vn.iotstar.entity.User;
 
 public interface UserService {
 

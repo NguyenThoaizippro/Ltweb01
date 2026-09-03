@@ -5,7 +5,7 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import vn.iotstar.config.JPAConfig;
 import vn.iotstar.dao.UserDao;
-import vn.iotstar.model.User;
+import vn.iotstar.entity.User;
 
 import java.util.List;
 

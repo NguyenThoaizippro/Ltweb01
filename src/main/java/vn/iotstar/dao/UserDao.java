@@ -1,6 +1,6 @@
 package vn.iotstar.dao;
 
-import vn.iotstar.model.User;
+import vn.iotstar.entity.User;
 
 public interface UserDao {
 
