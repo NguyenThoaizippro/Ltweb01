@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,7 +45,7 @@
     <div class="product-detail-card">
         <div class="detail-img-box">
             <c:choose>
-                <c:when test="${product.images != null && (product.images.startsWith('http://') || product.images.startsWith('https://'))}">
+                <c:when test="${product.images != null && fn:startsWith(product.images, 'http')}">
                     <img src="${product.images}" alt="${product.productName}">
                 </c:when>
                 <c:otherwise>
@@ -61,7 +62,7 @@
             <div class="detail-desc-title">Mô tả sản phẩm:</div>
             <div class="detail-desc">
                 <c:choose>
-                    <c:when test="${product.description != null && !product.description.isEmpty()}">
+                    <c:when test="${not empty product.description}">
                         ${product.description}
                     </c:when>
                     <c:otherwise>

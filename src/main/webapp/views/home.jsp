@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -50,7 +51,7 @@
             <a href="${pageContext.request.contextPath}/product/detail?id=${p.productId}" class="product-card">
                 <div class="img-wrap">
                     <c:choose>
-                        <c:when test="${p.images != null && (p.images.startsWith('http://') || p.images.startsWith('https://'))}">
+                        <c:when test="${p.images != null && fn:startsWith(p.images, 'http')}">
                             <img src="${p.images}" alt="${p.productName}">
                         </c:when>
                         <c:otherwise>

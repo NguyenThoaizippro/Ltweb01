@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -53,7 +54,7 @@
                 <td>${stt.index + 1}</td>
                 <td>
                     <c:choose>
-                        <c:when test="${prod.images != null && (prod.images.startsWith('http://') || prod.images.startsWith('https://'))}">
+                        <c:when test="${prod.images != null && fn:startsWith(prod.images, 'http')}">
                             <img src="${prod.images}" class="prod-img" alt="${prod.productName}">
                         </c:when>
                         <c:otherwise>

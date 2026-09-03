@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,12 +25,14 @@
 <c:forEach items="${listcate}" var="cate" varStatus="STT">
 <tr>
 <td>${STT.index+1 }</td>
-<c:if test="${cate.images != null && cate.images.length() >= 5 && cate.images.substring(0,5)=='https'}">
-<c:url value="${cate.images }" var="imgUrl"></c:url>
-</c:if>
-<c:if test="${cate.images == null || cate.images.length() < 5 || cate.images.substring(0,5)!='https'}">
-<c:url value="/image?fname=${cate.images }" var="imgUrl"></c:url>
-</c:if>
+<c:choose>
+    <c:when test="${cate.images != null && fn:startsWith(cate.images, 'http')}">
+        <c:url value="${cate.images}" var="imgUrl"></c:url>
+    </c:when>
+    <c:otherwise>
+        <c:url value="/image?fname=${cate.images}" var="imgUrl"></c:url>
+    </c:otherwise>
+</c:choose>
 
 <td><img height="150" width="200" src="${imgUrl}" /></td>
 <td>${cate.categoryname }</td>
