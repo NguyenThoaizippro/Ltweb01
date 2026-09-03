@@ -1,3 +1,6 @@
 /target/
 .vscode/
 src/main/resources/brevo.properties
+MEMORY.md
+docs/
+.agents/
