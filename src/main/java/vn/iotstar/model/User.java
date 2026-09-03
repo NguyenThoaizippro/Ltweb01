@@ -1,130 +1,167 @@
 package vn.iotstar.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
 
 @SuppressWarnings("serial")
+@Entity
+@Table(name = "[User]")
+@NamedQueries({
+    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u ORDER BY u.id DESC"),
+    @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.userName = :username"),
+    @NamedQuery(name = "User.findByEmail", query = "SELECT u FROM User u WHERE u.email = :email")
+})
 public class User implements Serializable {
 
-	private int id;
-	private String email;
-	private String userName;
-	private String fullName;
-	private String passWord;
-	private String avatar;
-	private int roleid;
-	private String phone;
-	private Date createdDate;
-	private int isActive = 1;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
 
-	public User() {
-	}
+    @Column(name = "email", nullable = false, length = 150)
+    private String email;
 
-	public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
-			String phone, Date createdDate) {
-		this.id = id;
-		this.email = email;
-		this.userName = userName;
-		this.fullName = fullName;
-		this.passWord = passWord;
-		this.avatar = avatar;
-		this.roleid = roleid;
-		this.phone = phone;
-		this.createdDate = createdDate;
-		this.isActive = 1;
-	}
+    @Column(name = "username", nullable = false, length = 50)
+    private String userName;
 
-	public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
-			String phone, Date createdDate, int isActive) {
-		this.id = id;
-		this.email = email;
-		this.userName = userName;
-		this.fullName = fullName;
-		this.passWord = passWord;
-		this.avatar = avatar;
-		this.roleid = roleid;
-		this.phone = phone;
-		this.createdDate = createdDate;
-		this.isActive = isActive;
-	}
+    @Column(name = "fullname", length = 100)
+    private String fullName;
 
-	public int getId() {
-		return id;
-	}
+    @Column(name = "password", nullable = false, length = 255)
+    private String passWord;
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    @Column(name = "avatar", length = 500)
+    private String avatar;
 
-	public String getEmail() {
-		return email;
-	}
+    @Column(name = "roleid")
+    private int roleid = 3;
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    @Column(name = "phone", length = 20)
+    private String phone;
 
-	public String getUserName() {
-		return userName;
-	}
+    @Column(name = "createdDate")
+    private Date createdDate;
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+    @Column(name = "isActive")
+    private int isActive = 1;
 
-	public String getFullName() {
-		return fullName;
-	}
+    public User() {
+    }
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+    public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
+            String phone, Date createdDate) {
+        this.id = id;
+        this.email = email;
+        this.userName = userName;
+        this.fullName = fullName;
+        this.passWord = passWord;
+        this.avatar = avatar;
+        this.roleid = roleid;
+        this.phone = phone;
+        this.createdDate = createdDate;
+        this.isActive = 1;
+    }
 
-	public String getPassWord() {
-		return passWord;
-	}
+    public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
+            String phone, Date createdDate, int isActive) {
+        this.id = id;
+        this.email = email;
+        this.userName = userName;
+        this.fullName = fullName;
+        this.passWord = passWord;
+        this.avatar = avatar;
+        this.roleid = roleid;
+        this.phone = phone;
+        this.createdDate = createdDate;
+        this.isActive = isActive;
+    }
 
-	public void setPassWord(String passWord) {
-		this.passWord = passWord;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public String getAvatar() {
-		return avatar;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public void setAvatar(String avatar) {
-		this.avatar = avatar;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public int getRoleid() {
-		return roleid;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setRoleid(int roleid) {
-		this.roleid = roleid;
-	}
+    public String getUserName() {
+        return userName;
+    }
 
-	public String getPhone() {
-		return phone;
-	}
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    public String getFullName() {
+        return fullName;
+    }
 
-	public Date getCreatedDate() {
-		return createdDate;
-	}
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
+    public String getPassWord() {
+        return passWord;
+    }
 
-	public int getIsActive() {
-		return isActive;
-	}
+    public void setPassWord(String passWord) {
+        this.passWord = passWord;
+    }
 
-	public void setIsActive(int isActive) {
-		this.isActive = isActive;
-	}
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getImages() {
+        return this.avatar;
+    }
+
+    public void setImages(String images) {
+        this.avatar = images;
+    }
+
+    public int getRoleid() {
+        return roleid;
+    }
+
+    public void setRoleid(int roleid) {
+        this.roleid = roleid;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public int getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(int isActive) {
+        this.isActive = isActive;
+    }
 }

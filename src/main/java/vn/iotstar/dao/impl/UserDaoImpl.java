@@ -1,152 +1,112 @@
 package vn.iotstar.dao.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import vn.iotstar.connection.DBConnection;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import vn.iotstar.config.JPAConfig;
 import vn.iotstar.dao.UserDao;
 import vn.iotstar.model.User;
 
-public class UserDaoImpl extends DBConnection implements UserDao {
+import java.util.List;
 
-	public Connection conn = null;
-	public PreparedStatement ps = null;
-	public ResultSet rs = null;
+public class UserDaoImpl implements UserDao {
 
-	private User mapUser(ResultSet rs) throws Exception {
-		User user = new User();
-		user.setId(rs.getInt("id"));
-		user.setEmail(rs.getString("email"));
-		user.setUserName(rs.getString("username"));
-		user.setFullName(rs.getString("fullname"));
-		user.setPassWord(rs.getString("password"));
-		user.setAvatar(rs.getString("avatar"));
-		user.setRoleid(rs.getInt("roleid"));
-		user.setPhone(rs.getString("phone"));
-		user.setCreatedDate(rs.getDate("createdDate"));
+	@Override
+	public User findById(int id) {
+		EntityManager em = JPAConfig.getEntityManager();
 		try {
-			user.setIsActive(rs.getInt("isActive"));
-		} catch (Exception e) {
-			user.setIsActive(1); // fallback if column not present yet
+			return em.find(User.class, id);
+		} finally {
+			em.close();
 		}
-		return user;
 	}
 
 	@Override
 	public User get(String username) {
-		String sql = "SELECT * FROM [User] WHERE username = ?";
+		EntityManager em = JPAConfig.getEntityManager();
 		try {
-			conn = super.getConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, username);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				return mapUser(rs);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			TypedQuery<User> query = em.createNamedQuery("User.findByUsername", User.class);
+			query.setParameter("username", username);
+			query.setMaxResults(1);
+			List<User> list = query.getResultList();
+			return list.isEmpty() ? null : list.get(0);
 		} finally {
-			try { if (rs != null) rs.close(); } catch (Exception e) { /* ignored */ }
-			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
-			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
+			em.close();
 		}
-		return null;
 	}
 
 	@Override
 	public User getByEmail(String email) {
-		String sql = "SELECT * FROM [User] WHERE email = ?";
+		EntityManager em = JPAConfig.getEntityManager();
 		try {
-			conn = super.getConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, email);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				return mapUser(rs);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			TypedQuery<User> query = em.createNamedQuery("User.findByEmail", User.class);
+			query.setParameter("email", email);
+			query.setMaxResults(1);
+			List<User> list = query.getResultList();
+			return list.isEmpty() ? null : list.get(0);
 		} finally {
-			try { if (rs != null) rs.close(); } catch (Exception e) { /* ignored */ }
-			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
-			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
+			em.close();
 		}
-		return null;
 	}
 
 	@Override
 	public void insert(User user) {
-		String sqlWithActive = "INSERT INTO [User](email, username, fullname, password, avatar, roleid, phone, createdDate, isActive) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		String sqlFallback = "INSERT INTO [User](email, username, fullname, password, avatar, roleid, phone, createdDate) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+		EntityManager em = JPAConfig.getEntityManager();
+		EntityTransaction trans = em.getTransaction();
 		try {
-			conn = super.getConnection();
-			try {
-				ps = conn.prepareStatement(sqlWithActive);
-				ps.setString(1, user.getEmail());
-				ps.setString(2, user.getUserName());
-				ps.setString(3, user.getFullName() != null ? user.getFullName() : user.getUserName());
-				ps.setString(4, user.getPassWord());
-				ps.setString(5, user.getAvatar() != null ? user.getAvatar() : "avatar.png");
-				ps.setInt(6, user.getRoleid() > 0 ? user.getRoleid() : 3);
-				ps.setString(7, user.getPhone() != null ? user.getPhone() : "");
-				ps.setDate(8, user.getCreatedDate() != null ? user.getCreatedDate() : new java.sql.Date(System.currentTimeMillis()));
-				ps.setInt(9, user.getIsActive());
-				ps.executeUpdate();
-			} catch (Exception ex) {
-				// If column isActive does not exist in schema yet, fallback
-				if (ps != null) ps.close();
-				ps = conn.prepareStatement(sqlFallback);
-				ps.setString(1, user.getEmail());
-				ps.setString(2, user.getUserName());
-				ps.setString(3, user.getFullName() != null ? user.getFullName() : user.getUserName());
-				ps.setString(4, user.getPassWord());
-				ps.setString(5, user.getAvatar() != null ? user.getAvatar() : "avatar.png");
-				ps.setInt(6, user.getRoleid() > 0 ? user.getRoleid() : 3);
-				ps.setString(7, user.getPhone() != null ? user.getPhone() : "");
-				ps.setDate(8, user.getCreatedDate() != null ? user.getCreatedDate() : new java.sql.Date(System.currentTimeMillis()));
-				ps.executeUpdate();
-			}
+			trans.begin();
+			em.persist(user);
+			trans.commit();
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (trans.isActive()) trans.rollback();
+			throw e;
 		} finally {
-			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
-			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
+			em.close();
+		}
+	}
+
+	@Override
+	public void update(User user) {
+		EntityManager em = JPAConfig.getEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		try {
+			trans.begin();
+			em.merge(user);
+			trans.commit();
+		} catch (Exception e) {
+			if (trans.isActive()) trans.rollback();
+			throw e;
+		} finally {
+			em.close();
 		}
 	}
 
 	@Override
 	public void updateActiveByEmail(String email, int isActive) {
-		String sql = "UPDATE [User] SET isActive = ? WHERE email = ?";
+		EntityManager em = JPAConfig.getEntityManager();
+		EntityTransaction trans = em.getTransaction();
 		try {
-			conn = super.getConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setInt(1, isActive);
-			ps.setString(2, email);
-			ps.executeUpdate();
+			trans.begin();
+			TypedQuery<User> query = em.createNamedQuery("User.findByEmail", User.class);
+			query.setParameter("email", email);
+			query.setMaxResults(1);
+			List<User> list = query.getResultList();
+			if (!list.isEmpty()) {
+				User u = list.get(0);
+				u.setIsActive(isActive);
+				em.merge(u);
+			}
+			trans.commit();
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (trans.isActive()) trans.rollback();
+			throw e;
 		} finally {
-			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
-			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
+			em.close();
 		}
 	}
 
 	@Override
 	public void updatePassword(User user) {
-		String sql = "UPDATE [User] SET password = ? WHERE email = ? OR username = ?";
-		try {
-			conn = super.getConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, user.getPassWord());
-			ps.setString(2, user.getEmail());
-			ps.setString(3, user.getUserName());
-			ps.executeUpdate();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
-			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
-		}
+		update(user);
 	}
 }

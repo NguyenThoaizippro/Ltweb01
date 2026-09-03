@@ -6,6 +6,16 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     
+    <!-- SiteMesh 3 Filter for Layout Decoration -->
+    <filter>
+        <filter-name>sitemesh</filter-name>
+        <filter-class>org.sitemesh.config.ConfigurableSiteMeshFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>sitemesh</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <session-config>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>

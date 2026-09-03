@@ -125,4 +125,30 @@ public class UserServiceImpl implements UserService {
 		u.setPassWord(PasswordUtil.hash(newPassword));
 		userDao.updatePassword(u);
 	}
+
+	@Override
+	public User findById(int id) {
+		return userDao.findById(id);
+	}
+
+	@Override
+	public User updateProfile(int id, String fullname, String phone, String avatar) throws Exception {
+		User u = userDao.findById(id);
+		if (u == null) {
+			throw new Exception("Không tìm thấy thông tin tài khoản!");
+		}
+
+		if (fullname != null && !fullname.trim().isEmpty()) {
+			u.setFullName(fullname.trim());
+		}
+		if (phone != null) {
+			u.setPhone(phone.trim());
+		}
+		if (avatar != null && !avatar.trim().isEmpty()) {
+			u.setAvatar(avatar.trim());
+		}
+
+		userDao.update(u);
+		return u;
+	}
 }

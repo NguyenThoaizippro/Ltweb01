@@ -20,7 +20,13 @@ public class UserServiceTest {
     static class InMemoryUserDao implements UserDao {
         Map<String, User> byUsername = new HashMap<>();
         Map<String, User> byEmail = new HashMap<>();
+        Map<Integer, User> byId = new HashMap<>();
         int idSeq = 1;
+
+        @Override
+        public User findById(int id) {
+            return byId.get(id);
+        }
 
         @Override
         public User get(String username) {
@@ -35,8 +41,16 @@ public class UserServiceTest {
         @Override
         public void insert(User user) {
             user.setId(idSeq++);
+            byId.put(user.getId(), user);
             byUsername.put(user.getUserName(), user);
             byEmail.put(user.getEmail(), user);
+        }
+
+        @Override
+        public void update(User user) {
+            byId.put(user.getId(), user);
+            if (user.getUserName() != null) byUsername.put(user.getUserName(), user);
+            if (user.getEmail() != null) byEmail.put(user.getEmail(), user);
         }
 
         @Override
@@ -163,5 +177,35 @@ public class UserServiceTest {
         // Verify password was auto-migrated to BCrypt
         User updated = fakeUserDao.get("legacy");
         assertTrue(updated.getPassWord().startsWith("$2"), "Legacy password should be upgraded to BCrypt");
+    }
+
+    @Test
+    void testUpdateProfileSuccess() throws Exception {
+        User u = new User();
+        u.setUserName("profileuser");
+        u.setEmail("profile@gmail.com");
+        u.setPassWord("pass123");
+        fakeUserDao.insert(u);
+
+        int userId = u.getId();
+        User updated = userService.updateProfile(userId, "Nguyen Van A", "0912345678", "avatar123.jpg");
+
+        assertNotNull(updated);
+        assertEquals("Nguyen Van A", updated.getFullName());
+        assertEquals("0912345678", updated.getPhone());
+        assertEquals("avatar123.jpg", updated.getAvatar());
+        assertEquals("avatar123.jpg", updated.getImages());
+
+        // Verify retrieval via findById
+        User reloaded = userService.findById(userId);
+        assertNotNull(reloaded);
+        assertEquals("Nguyen Van A", reloaded.getFullName());
+    }
+
+    @Test
+    void testUpdateProfileUserNotFound() {
+        assertThrows(Exception.class, () -> {
+            userService.updateProfile(9999, "Name", "0900000000", "pic.jpg");
+        });
     }
 }

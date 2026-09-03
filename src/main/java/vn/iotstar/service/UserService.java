@@ -14,5 +14,9 @@ public interface UserService {
 
 	void activate(String email);
 
+	User findById(int id);
+
 	void resetPassword(String email, String newPassword) throws Exception;
+
+	User updateProfile(int id, String fullname, String phone, String avatar) throws Exception;
 }

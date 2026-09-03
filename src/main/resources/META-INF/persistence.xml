@@ -8,6 +8,7 @@ https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 <class>vn.iotstar.entity.Video</class>
 <class>vn.iotstar.entity.OtpToken</class>
 <class>vn.iotstar.entity.Product</class>
+<class>vn.iotstar.model.User</class>
 <properties>
 <property name="jakarta.persistence.jdbc.url" value="jdbc:sqlserver://localhost\SQLEXPRESS;databaseName=bt01;trustServerCertificate=true" />
 <property name="jakarta.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
