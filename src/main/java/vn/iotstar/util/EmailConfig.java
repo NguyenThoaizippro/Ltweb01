@@ -8,7 +8,7 @@ public class EmailConfig {
       var is=EmailConfig.class.getResourceAsStream("/brevo.properties");
       if(is!=null){ p.load(is); String k=p.getProperty("brevo.api.key"); if(k!=null && !k.isBlank() && !k.contains("xxx")) return k; }
     }catch(Exception e){}
-    // Fallback: read from local untracked file D:\upload\brevo.key if exists (dev only)
+    // Fallback: read from local untracked file D:/upload/brevo.key if exists (dev only)
     try{ String k=java.nio.file.Files.readString(java.nio.file.Path.of("D:/upload/brevo.key")).trim(); if(!k.isBlank()) return k; }catch(Exception e){}
     return null; // caller must handle null -> mock log
   }
