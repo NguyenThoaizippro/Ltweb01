@@ -46,6 +46,10 @@ public class UserDaoImpl extends DBConnection implements UserDao {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try { if (rs != null) rs.close(); } catch (Exception e) { /* ignored */ }
+			try { if (ps != null) ps.close(); } catch (Exception e) { /* ignored */ }
+			try { if (conn != null) conn.close(); } catch (Exception e) { /* ignored */ }
 		}
 
 		return null;
