@@ -15,6 +15,7 @@ public class User implements Serializable {
 	private int roleid;
 	private String phone;
 	private Date createdDate;
+	private int isActive = 1;
 
 	public User() {
 	}
@@ -30,6 +31,21 @@ public class User implements Serializable {
 		this.roleid = roleid;
 		this.phone = phone;
 		this.createdDate = createdDate;
+		this.isActive = 1;
+	}
+
+	public User(int id, String email, String userName, String fullName, String passWord, String avatar, int roleid,
+			String phone, Date createdDate, int isActive) {
+		this.id = id;
+		this.email = email;
+		this.userName = userName;
+		this.fullName = fullName;
+		this.passWord = passWord;
+		this.avatar = avatar;
+		this.roleid = roleid;
+		this.phone = phone;
+		this.createdDate = createdDate;
+		this.isActive = isActive;
 	}
 
 	public int getId() {
@@ -102,5 +118,13 @@ public class User implements Serializable {
 
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public int getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(int isActive) {
+		this.isActive = isActive;
 	}
 }

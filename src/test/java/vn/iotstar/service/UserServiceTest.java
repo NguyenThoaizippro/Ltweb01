@@ -1,0 +1,127 @@
+package vn.iotstar.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import vn.iotstar.dao.UserDao;
+import vn.iotstar.model.User;
+import vn.iotstar.service.impl.UserServiceImpl;
+import vn.iotstar.util.PasswordUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class UserServiceTest {
+    private UserService userService;
+    private InMemoryUserDao fakeUserDao;
+    private MockOtpService fakeOtpService;
+
+    static class InMemoryUserDao implements UserDao {
+        Map<String, User> byUsername = new HashMap<>();
+        Map<String, User> byEmail = new HashMap<>();
+        int idSeq = 1;
+
+        @Override
+        public User get(String username) {
+            return byUsername.get(username);
+        }
+
+        @Override
+        public User getByEmail(String email) {
+            return byEmail.get(email);
+        }
+
+        @Override
+        public void insert(User user) {
+            user.setId(idSeq++);
+            byUsername.put(user.getUserName(), user);
+            byEmail.put(user.getEmail(), user);
+        }
+
+        @Override
+        public void updateActiveByEmail(String email, int isActive) {
+            User u = byEmail.get(email);
+            if (u != null) {
+                u.setIsActive(isActive);
+            }
+        }
+
+        @Override
+        public void updatePassword(User user) {
+            User u = byUsername.get(user.getUserName());
+            if (u != null) {
+                u.setPassWord(user.getPassWord());
+            }
+        }
+    }
+
+    static class MockOtpService implements OtpService {
+        String lastEmail;
+        String lastPurpose;
+        boolean verifyResult = true;
+
+        @Override
+        public void createAndSend(String email, String purpose) {
+            this.lastEmail = email;
+            this.lastPurpose = purpose;
+        }
+
+        @Override
+        public boolean verify(String email, String otp, String purpose) {
+            return verifyResult;
+        }
+
+        @Override
+        public vn.iotstar.entity.OtpToken findLatest(String email, String purpose) {
+            return null;
+        }
+    }
+
+    @BeforeEach
+    void setup() {
+        fakeUserDao = new InMemoryUserDao();
+        fakeOtpService = new MockOtpService();
+        userService = new UserServiceImpl(fakeUserDao, fakeOtpService);
+    }
+
+    @Test
+    void registerCreatesInactiveAndHash() throws Exception {
+        String u = "testuser";
+        String e = "testuser@gmail.com";
+        String p = "123456";
+
+        userService.register(u, e, p);
+
+        User saved = userService.get(u);
+        assertNotNull(saved);
+        assertEquals(0, saved.getIsActive(), "New registration should be inactive (isActive=0)");
+        assertNotEquals(p, saved.getPassWord(), "Password should be hashed");
+        assertTrue(PasswordUtil.check(p, saved.getPassWord()), "Password should match BCrypt hash");
+        assertEquals(e, fakeOtpService.lastEmail);
+        assertEquals("REGISTER", fakeOtpService.lastPurpose);
+    }
+
+    @Test
+    void registerDuplicateUsernameThrows() throws Exception {
+        userService.register("duplicate", "dup1@gmail.com", "pass");
+        Exception ex = assertThrows(Exception.class, () -> userService.register("duplicate", "dup2@gmail.com", "pass"));
+        assertTrue(ex.getMessage().contains("Username"));
+    }
+
+    @Test
+    void registerDuplicateEmailThrows() throws Exception {
+        userService.register("user1", "dup@gmail.com", "pass");
+        Exception ex = assertThrows(Exception.class, () -> userService.register("user2", "dup@gmail.com", "pass"));
+        assertTrue(ex.getMessage().contains("Email"));
+    }
+
+    @Test
+    void activateChangesStatusToActive() throws Exception {
+        userService.register("user_act", "act@gmail.com", "pass");
+        assertEquals(0, userService.get("user_act").getIsActive());
+
+        userService.activate("act@gmail.com");
+        assertEquals(1, userService.get("user_act").getIsActive());
+    }
+}
