@@ -23,29 +23,25 @@ public class WaitingController extends HttpServlet {
 		HttpSession session = req.getSession();
 
 		if (session != null && session.getAttribute("account") != null) {
-
 			User u = (User) session.getAttribute("account");
-
+			if (u.getIsActive() == 0) {
+				session.removeAttribute("account");
+				resp.sendRedirect(req.getContextPath() + "/login?alert=inactive");
+				return;
+			}
 			req.setAttribute("username", u.getUserName());
-
 			if (u.getRoleid() == 1) {
-
 				resp.sendRedirect(req.getContextPath() + "/admin/categories");
-
 			} else if (u.getRoleid() == 2) {
-
 				resp.sendRedirect(req.getContextPath() + "/manager/home");
-
 			} else {
-
 				resp.sendRedirect(req.getContextPath() + "/home");
 			}
-
 		} else if (session != null && session.getAttribute(Constant.SESSION_USERNAME) != null) {
 			String username = (String) session.getAttribute(Constant.SESSION_USERNAME);
 			UserService service = new UserServiceImpl();
 			User u = service.get(username);
-			if (u != null) {
+			if (u != null && u.getIsActive() != 0) {
 				session.setAttribute("account", u);
 				if (u.getRoleid() == 1) {
 					resp.sendRedirect(req.getContextPath() + "/admin/categories");

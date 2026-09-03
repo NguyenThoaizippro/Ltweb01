@@ -1,6 +1,8 @@
 package vn.iotstar.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,11 +15,13 @@ import vn.iotstar.model.User;
 import vn.iotstar.service.UserService;
 import vn.iotstar.service.impl.UserServiceImpl;
 import vn.iotstar.util.Constant;
+import vn.iotstar.util.PasswordUtil;
 
 @WebServlet(urlPatterns = { "/login" })
 public class LoginController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+	private final UserService service = new UserServiceImpl();
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -25,25 +29,36 @@ public class LoginController extends HttpServlet {
 		HttpSession session = req.getSession(false);
 
 		if (session != null && session.getAttribute("account") != null) {
-			resp.sendRedirect(req.getContextPath() + "/waiting");
-			return;
+			User user = (User) session.getAttribute("account");
+			if (user.getIsActive() != 0) {
+				resp.sendRedirect(req.getContextPath() + "/waiting");
+				return;
+			}
 		}
 
 		// Check cookie
 		Cookie[] cookies = req.getCookies();
-
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
-
 				if (cookie.getName().equals(Constant.COOKIE_REMEMBER)) {
-
 					session = req.getSession(true);
 					session.setAttribute(Constant.SESSION_USERNAME, cookie.getValue());
-
 					resp.sendRedirect(req.getContextPath() + "/waiting");
 					return;
 				}
 			}
+		}
+
+		String msg = req.getParameter("msg");
+		if ("activated".equals(msg)) {
+			req.setAttribute("successMsg", "Tài khoản của bạn đã được kích hoạt thành công! Hãy đăng nhập ngay.");
+		} else if ("resetOk".equals(msg)) {
+			req.setAttribute("successMsg", "Đổi mật khẩu thành công! Hãy đăng nhập với mật khẩu mới.");
+		}
+
+		String alert = req.getParameter("alert");
+		if ("inactive".equals(alert)) {
+			req.setAttribute("alert", "Tài khoản của bạn chưa được kích hoạt!");
 		}
 
 		req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
@@ -60,54 +75,64 @@ public class LoginController extends HttpServlet {
 		String password = req.getParameter("password");
 
 		boolean isRememberMe = false;
-
 		String remember = req.getParameter("remember");
-
 		if ("on".equals(remember)) {
 			isRememberMe = true;
 		}
 
-		String alertMsg = "";
-		if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-
-			alertMsg = "Tài khoản hoặc mật khẩu không được rỗng";
-
-			req.setAttribute("alert", alertMsg);
-
+		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+			req.setAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
+			req.setAttribute("username", username);
 			req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
-
 			return;
 		}
-		UserService service = new UserServiceImpl();
 
-		User user = service.login(username, password);
+		User user = service.login(username.trim(), password.trim());
 		if (user != null) {
-
 			HttpSession session = req.getSession(true);
-
 			session.setAttribute("account", user);
 
 			if (isRememberMe) {
-				saveRememberMe(resp, username);
+				saveRememberMe(resp, username.trim());
 			}
 
 			resp.sendRedirect(req.getContextPath() + "/waiting");
 		} else {
+			// Check if user exists but is inactive
+			User existing = service.get(username.trim());
+			if (existing == null) {
+				existing = service.getByEmail(username.trim());
+			}
 
-			alertMsg = "Tài khoản hoặc mật khẩu không đúng";
+			if (existing != null && existing.getIsActive() == 0) {
+				String hashed = existing.getPassWord();
+				boolean passwordCorrect = false;
+				if (hashed != null && hashed.startsWith("$2")) {
+					passwordCorrect = PasswordUtil.check(password.trim(), hashed);
+				} else {
+					passwordCorrect = password.trim().equals(hashed);
+				}
 
-			req.setAttribute("alert", alertMsg);
+				if (passwordCorrect) {
+					String encodedEmail = URLEncoder.encode(existing.getEmail(), StandardCharsets.UTF_8);
+					req.setAttribute("alert", "Tài khoản chưa kích hoạt! Vui lòng kiểm tra email để xác thực OTP.");
+					req.setAttribute("unactivatedEmail", existing.getEmail());
+					req.setAttribute("verifyUrl", req.getContextPath() + "/verify-otp?email=" + encodedEmail + "&purpose=REGISTER");
+					req.setAttribute("username", username);
+					req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+					return;
+				}
+			}
 
+			req.setAttribute("alert", "Tài khoản hoặc mật khẩu không đúng");
+			req.setAttribute("username", username);
 			req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
 		}
 	}
 
 	private void saveRememberMe(HttpServletResponse response, String username) {
-
 		Cookie cookie = new Cookie(Constant.COOKIE_REMEMBER, username);
-
 		cookie.setMaxAge(30 * 60);
-
 		response.addCookie(cookie);
 	}
 }

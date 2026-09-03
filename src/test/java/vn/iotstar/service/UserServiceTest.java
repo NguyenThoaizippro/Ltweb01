@@ -124,4 +124,44 @@ public class UserServiceTest {
         userService.activate("act@gmail.com");
         assertEquals(1, userService.get("user_act").getIsActive());
     }
+
+    @Test
+    void loginBlockInactiveAndAllowsActive() throws Exception {
+        userService.register("inactive_user", "inactive@gmail.com", "pass123");
+
+        // Before activation, login should return null
+        assertNull(userService.login("inactive_user", "pass123"), "Inactive user should not be able to login");
+
+        // Activate user
+        userService.activate("inactive@gmail.com");
+
+        // After activation, login should succeed
+        User loggedIn = userService.login("inactive_user", "pass123");
+        assertNotNull(loggedIn, "Active user should be able to login");
+        assertEquals("inactive_user", loggedIn.getUserName());
+
+        // Wrong password should fail
+        assertNull(userService.login("inactive_user", "wrong_pass"));
+
+        // Login using email should also succeed
+        User loggedInByEmail = userService.login("inactive@gmail.com", "pass123");
+        assertNotNull(loggedInByEmail, "Should be able to login using email");
+    }
+
+    @Test
+    void loginLegacyPlaintextPasswordUpgradesHash() {
+        User legacy = new User();
+        legacy.setUserName("legacy");
+        legacy.setEmail("legacy@gmail.com");
+        legacy.setPassWord("plain123");
+        legacy.setIsActive(1);
+        fakeUserDao.insert(legacy);
+
+        User loggedIn = userService.login("legacy", "plain123");
+        assertNotNull(loggedIn);
+
+        // Verify password was auto-migrated to BCrypt
+        User updated = fakeUserDao.get("legacy");
+        assertTrue(updated.getPassWord().startsWith("$2"), "Legacy password should be upgraded to BCrypt");
+    }
 }
