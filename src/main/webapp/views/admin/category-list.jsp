@@ -8,7 +8,10 @@
 </head>
 <body>
 <%@ include file="/views/topbar.jsp" %>
-<a href="<c:url value="/admin/category/add"/>">Add Category</a><br>
+<div style="margin: 15px 0;">
+    <a href="<c:url value="/admin/category/add"/>">➕ Thêm Danh mục</a> | 
+    <a href="<c:url value="/admin/products"/>" style="font-weight: bold; color: #2563eb;">📦 Quản lý Sản phẩm</a>
+</div>
 <hr>
 <table border="1" width="100%">
 <tr>
