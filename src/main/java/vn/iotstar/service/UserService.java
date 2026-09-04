@@ -19,4 +19,6 @@ public interface UserService {
 	void resetPassword(String email, String newPassword) throws Exception;
 
 	User updateProfile(int id, String fullname, String phone, String avatar) throws Exception;
+
+	void insert(User user) throws Exception;
 }

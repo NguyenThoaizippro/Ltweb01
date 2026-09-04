@@ -31,9 +31,9 @@ public class ForgotPasswordController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/forgot-password");
                 return;
             }
-            req.getRequestDispatcher("/views/reset-password.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);
         } else {
-            req.getRequestDispatcher("/views/forgot-password.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/forgot-password.jsp").include(req, resp);
         }
     }
 
@@ -47,7 +47,7 @@ public class ForgotPasswordController extends HttpServlet {
             String email = req.getParameter("email");
             if (email == null || email.trim().isEmpty()) {
                 req.setAttribute("alert", "Vui lòng nhập địa chỉ email!");
-                req.getRequestDispatcher("/views/forgot-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/forgot-password.jsp").include(req, resp);
                 return;
             }
 
@@ -60,7 +60,7 @@ public class ForgotPasswordController extends HttpServlet {
             if (user == null) {
                 req.setAttribute("alert", "Email không tồn tại trong hệ thống!");
                 req.setAttribute("email", email);
-                req.getRequestDispatcher("/views/forgot-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/forgot-password.jsp").include(req, resp);
                 return;
             }
 
@@ -71,7 +71,7 @@ public class ForgotPasswordController extends HttpServlet {
             } catch (Exception e) {
                 req.setAttribute("alert", e.getMessage());
                 req.setAttribute("email", email);
-                req.getRequestDispatcher("/views/forgot-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/forgot-password.jsp").include(req, resp);
             }
         } else {
             // /reset-password
@@ -87,13 +87,13 @@ public class ForgotPasswordController extends HttpServlet {
 
             if (password == null || password.trim().isEmpty() || confirmPassword == null || confirmPassword.trim().isEmpty()) {
                 req.setAttribute("alert", "Mật khẩu không được để trống!");
-                req.getRequestDispatcher("/views/reset-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
                 req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
-                req.getRequestDispatcher("/views/reset-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);
                 return;
             }
 
@@ -103,7 +103,7 @@ public class ForgotPasswordController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/login?msg=resetOk");
             } catch (Exception e) {
                 req.setAttribute("alert", e.getMessage());
-                req.getRequestDispatcher("/views/reset-password.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);
             }
         }
     }

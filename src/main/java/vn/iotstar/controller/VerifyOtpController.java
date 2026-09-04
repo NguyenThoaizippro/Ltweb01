@@ -27,7 +27,7 @@ public class VerifyOtpController extends HttpServlet {
         }
         req.setAttribute("email", email);
         req.setAttribute("purpose", purpose);
-        req.getRequestDispatcher("/views/verify-otp.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class VerifyOtpController extends HttpServlet {
             } catch (Exception e) {
                 req.setAttribute("alert", e.getMessage());
             }
-            req.getRequestDispatcher("/views/verify-otp.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
             return;
         }
 
@@ -59,8 +59,23 @@ public class VerifyOtpController extends HttpServlet {
         String otp = req.getParameter("otp");
         if (otpService.verify(email, otp, purpose)) {
             if ("REGISTER".equalsIgnoreCase(purpose)) {
-                userService.activate(email);
-                resp.sendRedirect(req.getContextPath() + "/login?msg=activated");
+                vn.iotstar.entity.User pendingUser = (vn.iotstar.entity.User) req.getSession().getAttribute("PENDING_USER_" + email);
+                if (pendingUser != null) {
+                    try {
+                        pendingUser.setIsActive(1);
+                        pendingUser.setCreatedDate(new java.sql.Date(System.currentTimeMillis()));
+                        userService.insert(pendingUser);
+                        req.getSession().removeAttribute("PENDING_USER_" + email);
+                        resp.sendRedirect(req.getContextPath() + "/login?msg=activated");
+                    } catch (Exception e) {
+                        req.setAttribute("alert", "Lỗi tạo tài khoản: " + e.getMessage());
+                        req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
+                    }
+                } else {
+                    // Backward compatibility cho những tài khoản cũ đã lỡ insert với isActive=0
+                    userService.activate(email);
+                    resp.sendRedirect(req.getContextPath() + "/login?msg=activated");
+                }
             } else if ("FORGOT".equalsIgnoreCase(purpose)) {
                 req.getSession().setAttribute("resetEmail", email);
                 resp.sendRedirect(req.getContextPath() + "/reset-password");
@@ -69,7 +84,7 @@ public class VerifyOtpController extends HttpServlet {
             }
         } else {
             req.setAttribute("alert", "Mã OTP không đúng, đã quá số lần thử hoặc đã hết hạn (120 giây)!");
-            req.getRequestDispatcher("/views/verify-otp.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
         }
     }
 }

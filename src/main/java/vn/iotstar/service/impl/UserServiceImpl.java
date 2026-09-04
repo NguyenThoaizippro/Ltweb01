@@ -86,15 +86,6 @@ public class UserServiceImpl implements UserService {
 			throw new Exception("Email đã tồn tại");
 		}
 
-		User u = new User();
-		u.setUserName(username.trim());
-		u.setEmail(email.trim());
-		u.setPassWord(PasswordUtil.hash(password));
-		u.setIsActive(0); // 0 = inactive until verified with OTP
-		u.setRoleid(3);   // standard user role
-		u.setCreatedDate(new java.sql.Date(System.currentTimeMillis()));
-
-		userDao.insert(u);
 		otpService.createAndSend(email.trim(), "REGISTER");
 	}
 
@@ -150,5 +141,16 @@ public class UserServiceImpl implements UserService {
 
 		userDao.update(u);
 		return u;
+	}
+
+	@Override
+	public void insert(User user) throws Exception {
+		if (userDao.get(user.getUserName()) != null) {
+			throw new Exception("Username đã tồn tại");
+		}
+		if (userDao.getByEmail(user.getEmail()) != null) {
+			throw new Exception("Email đã tồn tại");
+		}
+		userDao.insert(user);
 	}
 }

@@ -22,6 +22,6 @@ public class ManagerHomeController extends HttpServlet {
 			return;
 		}
 
-		req.getRequestDispatcher("/views/manager/home.jsp").forward(req, resp);
+		req.getRequestDispatcher("/views/manager/home.jsp").include(req, resp);
 	}
 }

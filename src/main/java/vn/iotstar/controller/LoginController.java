@@ -61,7 +61,7 @@ public class LoginController extends HttpServlet {
 			req.setAttribute("alert", "Tài khoản của bạn chưa được kích hoạt!");
 		}
 
-		req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+		req.getRequestDispatcher("/views/login.jsp").include(req, resp);
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class LoginController extends HttpServlet {
 		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
 			req.setAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
 			req.setAttribute("username", username);
-			req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+			req.getRequestDispatcher("/views/login.jsp").include(req, resp);
 			return;
 		}
 
@@ -119,14 +119,14 @@ public class LoginController extends HttpServlet {
 					req.setAttribute("unactivatedEmail", existing.getEmail());
 					req.setAttribute("verifyUrl", req.getContextPath() + "/verify-otp?email=" + encodedEmail + "&purpose=REGISTER");
 					req.setAttribute("username", username);
-					req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+					req.getRequestDispatcher("/views/login.jsp").include(req, resp);
 					return;
 				}
 			}
 
 			req.setAttribute("alert", "Tài khoản hoặc mật khẩu không đúng");
 			req.setAttribute("username", username);
-			req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
+			req.getRequestDispatcher("/views/login.jsp").include(req, resp);
 		}
 	}
 

@@ -100,7 +100,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void registerCreatesInactiveAndHash() throws Exception {
+    void registerDoesNotSaveToDbButSendsOtp() throws Exception {
         String u = "testuser";
         String e = "testuser@gmail.com";
         String p = "123456";
@@ -108,31 +108,31 @@ public class UserServiceTest {
         userService.register(u, e, p);
 
         User saved = userService.get(u);
-        assertNotNull(saved);
-        assertEquals(0, saved.getIsActive(), "New registration should be inactive (isActive=0)");
-        assertNotEquals(p, saved.getPassWord(), "Password should be hashed");
-        assertTrue(PasswordUtil.check(p, saved.getPassWord()), "Password should match BCrypt hash");
+        assertNull(saved, "Registration should not save to DB immediately");
         assertEquals(e, fakeOtpService.lastEmail);
         assertEquals("REGISTER", fakeOtpService.lastPurpose);
     }
 
     @Test
     void registerDuplicateUsernameThrows() throws Exception {
-        userService.register("duplicate", "dup1@gmail.com", "pass");
+        User u = new User(); u.setUserName("duplicate"); u.setEmail("dup1@gmail.com"); u.setPassWord("pass"); u.setIsActive(1);
+        userService.insert(u);
         Exception ex = assertThrows(Exception.class, () -> userService.register("duplicate", "dup2@gmail.com", "pass"));
         assertTrue(ex.getMessage().contains("Username"));
     }
 
     @Test
     void registerDuplicateEmailThrows() throws Exception {
-        userService.register("user1", "dup@gmail.com", "pass");
+        User u = new User(); u.setUserName("user1"); u.setEmail("dup@gmail.com"); u.setPassWord("pass"); u.setIsActive(1);
+        userService.insert(u);
         Exception ex = assertThrows(Exception.class, () -> userService.register("user2", "dup@gmail.com", "pass"));
         assertTrue(ex.getMessage().contains("Email"));
     }
 
     @Test
     void activateChangesStatusToActive() throws Exception {
-        userService.register("user_act", "act@gmail.com", "pass");
+        User u = new User(); u.setUserName("user_act"); u.setEmail("act@gmail.com"); u.setPassWord("pass"); u.setIsActive(0);
+        userService.insert(u);
         assertEquals(0, userService.get("user_act").getIsActive());
 
         userService.activate("act@gmail.com");
@@ -141,7 +141,8 @@ public class UserServiceTest {
 
     @Test
     void loginBlockInactiveAndAllowsActive() throws Exception {
-        userService.register("inactive_user", "inactive@gmail.com", "pass123");
+        User u = new User(); u.setUserName("inactive_user"); u.setEmail("inactive@gmail.com"); u.setPassWord(PasswordUtil.hash("pass123")); u.setIsActive(0);
+        userService.insert(u);
 
         // Before activation, login should return null
         assertNull(userService.login("inactive_user", "pass123"), "Inactive user should not be able to login");

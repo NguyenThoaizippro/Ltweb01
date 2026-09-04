@@ -33,9 +33,14 @@ public class ForgotPasswordTest {
         String oldPass = "old_password";
         String newPass = "new_secret_123";
 
-        // Register and activate user
-        userService.register(u, e, oldPass);
-        userService.activate(e);
+        // Insert active user directly
+        vn.iotstar.entity.User user = new vn.iotstar.entity.User();
+        user.setUserName(u);
+        user.setEmail(e);
+        user.setPassWord(vn.iotstar.util.PasswordUtil.hash(oldPass));
+        user.setIsActive(1);
+        userService.insert(user);
+        
         assertNotNull(userService.login(u, oldPass));
 
         // Trigger forgot password OTP

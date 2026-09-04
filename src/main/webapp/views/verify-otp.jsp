@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" buffer="64kb"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -51,7 +51,7 @@
         <input type="hidden" name="email" value="${email}">
         <input type="hidden" name="purpose" value="${purpose}">
 
-        <input type="text" name="otp" class="otp-input" maxlength="6" pattern="\\d{6}" placeholder="------" required autofocus>
+        <input type="text" name="otp" class="otp-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="------" required autofocus>
 
         <button type="submit" class="btn-submit">Xác nhận mã OTP</button>
     </form>

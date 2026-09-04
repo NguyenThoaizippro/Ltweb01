@@ -6,6 +6,7 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     
+
     <!-- SiteMesh 3 Filter for Layout Decoration -->
     <filter>
         <filter-name>sitemesh</filter-name>
@@ -15,6 +16,8 @@
         <filter-name>sitemesh</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+
 
     <session-config>
         <tracking-mode>COOKIE</tracking-mode>

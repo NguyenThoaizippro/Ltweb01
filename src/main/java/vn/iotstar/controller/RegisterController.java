@@ -19,7 +19,7 @@ public class RegisterController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher("/views/register.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/register.jsp").include(req, resp);
     }
 
     @Override
@@ -36,19 +36,34 @@ public class RegisterController extends HttpServlet {
             req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
             req.setAttribute("username", username);
             req.setAttribute("email", email);
-            req.getRequestDispatcher("/views/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/register.jsp").include(req, resp);
             return;
         }
 
         try {
-            userService.register(username, email, password);
+            if (userService.get(username) != null) {
+                throw new Exception("Username đã tồn tại");
+            }
+            if (userService.getByEmail(email) != null) {
+                throw new Exception("Email đã tồn tại");
+            }
+
+            vn.iotstar.entity.User pendingUser = new vn.iotstar.entity.User();
+            pendingUser.setUserName(username.trim());
+            pendingUser.setEmail(email.trim());
+            pendingUser.setPassWord(vn.iotstar.util.PasswordUtil.hash(password));
+            req.getSession().setAttribute("PENDING_USER_" + email.trim(), pendingUser);
+
+            vn.iotstar.service.OtpService otpService = new vn.iotstar.service.impl.OtpServiceImpl();
+            otpService.createAndSend(email.trim(), "REGISTER");
+
             String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
             resp.sendRedirect(req.getContextPath() + "/verify-otp?email=" + encodedEmail + "&purpose=REGISTER");
         } catch (Exception e) {
             req.setAttribute("alert", e.getMessage());
             req.setAttribute("username", username);
             req.setAttribute("email", email);
-            req.getRequestDispatcher("/views/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/register.jsp").include(req, resp);
         }
     }
 }
