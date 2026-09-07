@@ -91,6 +91,12 @@ public class ForgotPasswordController extends HttpServlet {
                 return;
             }
 
+            if (password.length() < 6) {
+                req.setAttribute("alert", "Mật khẩu mới phải có độ dài tối thiểu 6 ký tự!");
+                req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);
+                return;
+            }
+
             if (!password.equals(confirmPassword)) {
                 req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
                 req.getRequestDispatcher("/views/reset-password.jsp").include(req, resp);

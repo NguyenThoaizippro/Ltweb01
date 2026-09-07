@@ -6,7 +6,7 @@ import java.sql.Date;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "[User]")
+@Table(name = "users")
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u ORDER BY u.id DESC"),
     @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.userName = :username"),

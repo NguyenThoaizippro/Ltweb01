@@ -15,8 +15,18 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/verify-otp", "/resend-otp"})
 public class VerifyOtpController extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private final OtpService otpService = new OtpServiceImpl();
-    private final UserService userService = new UserServiceImpl();
+    private final OtpService otpService;
+    private final UserService userService;
+
+    public VerifyOtpController() {
+        this.otpService = new OtpServiceImpl();
+        this.userService = new UserServiceImpl();
+    }
+
+    public VerifyOtpController(OtpService otpService, UserService userService) {
+        this.otpService = otpService;
+        this.userService = userService;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,8 +65,15 @@ public class VerifyOtpController extends HttpServlet {
             return;
         }
 
-        // Verify OTP action
+        // Verify OTP action with Server-side validation
         String otp = req.getParameter("otp");
+        if (otp == null || !otp.trim().matches("^[0-9]{6}$")) {
+            req.setAttribute("alert", "Mã OTP không hợp lệ! Vui lòng nhập đúng 6 chữ số.");
+            req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
+            return;
+        }
+
+        otp = otp.trim();
         if (otpService.verify(email, otp, purpose)) {
             if ("REGISTER".equalsIgnoreCase(purpose)) {
                 vn.iotstar.entity.User pendingUser = (vn.iotstar.entity.User) req.getSession().getAttribute("PENDING_USER_" + email);
@@ -72,7 +89,7 @@ public class VerifyOtpController extends HttpServlet {
                         req.getRequestDispatcher("/views/verify-otp.jsp").include(req, resp);
                     }
                 } else {
-                    // Backward compatibility cho những tài khoản cũ đã lỡ insert với isActive=0
+                    // Backward compatibility
                     userService.activate(email);
                     resp.sendRedirect(req.getContextPath() + "/login?msg=activated");
                 }

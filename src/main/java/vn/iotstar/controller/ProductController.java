@@ -125,18 +125,63 @@ public class ProductController extends HttpServlet {
             String name = req.getParameter("productName");
             String desc = req.getParameter("description");
             String priceStr = req.getParameter("price");
-            int status = Integer.parseInt(req.getParameter("status"));
-            int categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            String statusStr = req.getParameter("status");
+            String categoryIdStr = req.getParameter("categoryId");
             String linkImages = req.getParameter("images");
 
-            Part part = req.getPart("images1");
-            String filename = handleUpload(part, linkImages);
+            int status = "0".equals(statusStr) ? 0 : 1;
+            int categoryId = 0;
+            try {
+                if (categoryIdStr != null) categoryId = Integer.parseInt(categoryIdStr);
+            } catch (Exception ignored) {}
 
-            Category category = cateService.findById(categoryId);
+            // Server-side validation
+            if (name == null || name.trim().isEmpty()) {
+                forwardAddWithError(req, resp, "Tên sản phẩm không được để trống!", name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+            name = name.trim();
+            if (name.length() < 2 || name.length() > 255) {
+                forwardAddWithError(req, resp, "Tên sản phẩm phải có độ dài từ 2 đến 255 ký tự!", name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+
+            if (priceStr == null || priceStr.trim().isEmpty()) {
+                forwardAddWithError(req, resp, "Giá sản phẩm không được để trống!", name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+
+            BigDecimal price;
+            try {
+                price = new BigDecimal(priceStr.trim());
+                if (price.compareTo(BigDecimal.ZERO) < 0) {
+                    forwardAddWithError(req, resp, "Giá sản phẩm phải lớn hơn hoặc bằng 0!", name, desc, priceStr, status, categoryId, linkImages);
+                    return;
+                }
+            } catch (Exception e) {
+                forwardAddWithError(req, resp, "Giá sản phẩm phải là một số hợp lệ!", name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+
+            Category category = categoryId > 0 ? cateService.findById(categoryId) : null;
+            if (category == null) {
+                forwardAddWithError(req, resp, "Vui lòng chọn danh mục hợp lệ!", name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+
+            Part part = req.getPart("images1");
+            String filename;
+            try {
+                filename = handleUpload(part, linkImages);
+            } catch (Exception e) {
+                forwardAddWithError(req, resp, e.getMessage(), name, desc, priceStr, status, categoryId, linkImages);
+                return;
+            }
+
             Product product = new Product();
             product.setProductName(name);
             product.setDescription(desc);
-            product.setPrice(new BigDecimal(priceStr));
+            product.setPrice(price);
             product.setStatus(status);
             product.setCategory(category);
             product.setImages(filename);
@@ -145,39 +190,119 @@ public class ProductController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/admin/products");
 
         } else if (url.contains("/admin/product/update")) {
-            int id = Integer.parseInt(req.getParameter("productId"));
+            int id = 0;
+            try {
+                id = Integer.parseInt(req.getParameter("productId"));
+            } catch (Exception e) {
+                resp.sendRedirect(req.getContextPath() + "/admin/products");
+                return;
+            }
+
+            Product product = productService.findById(id);
+            if (product == null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/products");
+                return;
+            }
+
             String name = req.getParameter("productName");
             String desc = req.getParameter("description");
             String priceStr = req.getParameter("price");
-            int status = Integer.parseInt(req.getParameter("status"));
-            int categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            String statusStr = req.getParameter("status");
+            String categoryIdStr = req.getParameter("categoryId");
             String linkImages = req.getParameter("images");
 
-            Product product = productService.findById(id);
-            String oldFile = product.getImages();
+            int status = "0".equals(statusStr) ? 0 : 1;
+            int categoryId = 0;
+            try {
+                if (categoryIdStr != null) categoryId = Integer.parseInt(categoryIdStr);
+            } catch (Exception ignored) {}
 
+            // Server-side validation
+            if (name == null || name.trim().isEmpty()) {
+                forwardEditWithError(req, resp, product, "Tên sản phẩm không được để trống!");
+                return;
+            }
+            name = name.trim();
+            if (name.length() < 2 || name.length() > 255) {
+                forwardEditWithError(req, resp, product, "Tên sản phẩm phải có độ dài từ 2 đến 255 ký tự!");
+                return;
+            }
+
+            if (priceStr == null || priceStr.trim().isEmpty()) {
+                forwardEditWithError(req, resp, product, "Giá sản phẩm không được để trống!");
+                return;
+            }
+
+            BigDecimal price;
+            try {
+                price = new BigDecimal(priceStr.trim());
+                if (price.compareTo(BigDecimal.ZERO) < 0) {
+                    forwardEditWithError(req, resp, product, "Giá sản phẩm phải lớn hơn hoặc bằng 0!");
+                    return;
+                }
+            } catch (Exception e) {
+                forwardEditWithError(req, resp, product, "Giá sản phẩm phải là một số hợp lệ!");
+                return;
+            }
+
+            Category category = categoryId > 0 ? cateService.findById(categoryId) : null;
+            if (category == null) {
+                forwardEditWithError(req, resp, product, "Vui lòng chọn danh mục hợp lệ!");
+                return;
+            }
+
+            String oldFile = product.getImages();
             Part part = req.getPart("images1");
             if (part != null && part.getSize() > 0) {
-                // Delete old file if local
-                if (oldFile != null && !oldFile.startsWith("http")) {
-                    deleteFile(Constant.DIR + "/" + oldFile);
+                try {
+                    String filename = handleUpload(part, null);
+                    if (oldFile != null && !oldFile.startsWith("http")) {
+                        deleteFile(Constant.DIR + "/" + oldFile);
+                    }
+                    product.setImages(filename);
+                } catch (Exception e) {
+                    forwardEditWithError(req, resp, product, e.getMessage());
+                    return;
                 }
-                String filename = handleUpload(part, null);
-                product.setImages(filename);
             } else if (linkImages != null && !linkImages.trim().isEmpty()) {
                 product.setImages(linkImages.trim());
             }
 
-            Category category = cateService.findById(categoryId);
             product.setProductName(name);
             product.setDescription(desc);
-            product.setPrice(new BigDecimal(priceStr));
+            product.setPrice(price);
             product.setStatus(status);
             product.setCategory(category);
 
             productService.update(product);
             resp.sendRedirect(req.getContextPath() + "/admin/products");
         }
+    }
+
+    private void forwardAddWithError(HttpServletRequest req, HttpServletResponse resp, String alertMsg,
+                                     String name, String desc, String priceStr, int status, int categoryId, String linkImages)
+            throws ServletException, IOException {
+        req.setAttribute("alert", alertMsg);
+        req.setAttribute("productName", name);
+        req.setAttribute("description", desc);
+        req.setAttribute("price", priceStr);
+        req.setAttribute("status", status);
+        req.setAttribute("categoryId", categoryId);
+        req.setAttribute("images", linkImages);
+        try {
+            req.setAttribute("categories", cateService.findAll());
+        } catch (Exception ignored) {}
+        req.getRequestDispatcher("/views/admin/product-add.jsp").forward(req, resp);
+    }
+
+    private void forwardEditWithError(HttpServletRequest req, HttpServletResponse resp, Product product, String alertMsg)
+            throws ServletException, IOException {
+        req.setAttribute("alert", alertMsg);
+        req.setAttribute("product", product);
+        try {
+            req.setAttribute("categories", cateService.findAll());
+        } catch (Exception ignored) {}
+        req.getRequestDispatcher("/views/admin/product-edit.jsp").forward(req, resp);
     }
 
     private String handleUpload(Part part, String fallbackLink) throws IOException, ServletException {
@@ -193,7 +318,7 @@ public class ProductController extends HttpServlet {
                 throw new ServletException("Định dạng file không hợp lệ! Chỉ cho phép JPG, JPEG, PNG, GIF, WEBP.");
             }
 
-            String fname = System.currentTimeMillis() + ext;
+            String fname = "prod_" + System.currentTimeMillis() + ext;
             File dir = new File(Constant.DIR);
             if (!dir.exists()) {
                 dir.mkdirs();
@@ -206,14 +331,12 @@ public class ProductController extends HttpServlet {
         return "avatar.png";
     }
 
-    private static void deleteFile(String filePath) {
+    public static void deleteFile(String filePath) {
         try {
             File file = new File(filePath);
             if (file.exists()) {
                 file.delete();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception ignored) {}
     }
 }

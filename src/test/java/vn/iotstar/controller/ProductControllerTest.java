@@ -79,4 +79,54 @@ public class ProductControllerTest {
         verify(request).getRequestDispatcher(eq("/views/product-detail.jsp"));
         verify(dispatcher).forward(request, response);
     }
+
+    @Test
+    void insertProductBlankNameFailsValidation() throws Exception {
+        when(request.getRequestURI()).thenReturn("/bt01/admin/product/insert");
+        when(request.getParameter("productName")).thenReturn("");
+        when(request.getParameter("price")).thenReturn("500000");
+
+        controller.doPost(request, response);
+
+        verify(request).setAttribute(eq("alert"), contains("không được để trống"));
+        verify(request).getRequestDispatcher(eq("/views/admin/product-add.jsp"));
+        verify(dispatcher).forward(request, response);
+        verify(productService, never()).insert(any(Product.class));
+    }
+
+    @Test
+    void insertProductInvalidPriceFailsValidation() throws Exception {
+        when(request.getRequestURI()).thenReturn("/bt01/admin/product/insert");
+        when(request.getParameter("productName")).thenReturn("iPhone 15 Pro");
+        when(request.getParameter("price")).thenReturn("-1000");
+
+        controller.doPost(request, response);
+
+        verify(request).setAttribute(eq("alert"), contains("lớn hơn hoặc bằng 0"));
+        verify(request).getRequestDispatcher(eq("/views/admin/product-add.jsp"));
+        verify(dispatcher).forward(request, response);
+        verify(productService, never()).insert(any(Product.class));
+    }
+
+    @Test
+    void insertProductSuccess() throws Exception {
+        when(request.getRequestURI()).thenReturn("/bt01/admin/product/insert");
+        when(request.getContextPath()).thenReturn("/bt01");
+        when(request.getParameter("productName")).thenReturn("Samsung Galaxy S24");
+        when(request.getParameter("description")).thenReturn("Flagship phone");
+        when(request.getParameter("price")).thenReturn("20000000");
+        when(request.getParameter("status")).thenReturn("1");
+        when(request.getParameter("categoryId")).thenReturn("2");
+        when(request.getParameter("images")).thenReturn("https://example.com/s24.jpg");
+        when(request.getPart("images1")).thenReturn(null);
+
+        vn.iotstar.entity.Category mockCategory = new vn.iotstar.entity.Category();
+        mockCategory.setCategoryid(2);
+        when(categoryService.findById(2)).thenReturn(mockCategory);
+
+        controller.doPost(request, response);
+
+        verify(productService).insert(any(Product.class));
+        verify(response).sendRedirect("/bt01/admin/products");
+    }
 }

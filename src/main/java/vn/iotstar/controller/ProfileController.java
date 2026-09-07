@@ -74,6 +74,20 @@ public class ProfileController extends HttpServlet {
         String phone = req.getParameter("phone");
         String imagesLink = req.getParameter("images");
 
+        if (fullname == null || fullname.trim().isEmpty()) {
+            req.setAttribute("alert", "Họ và tên không được để trống!");
+            req.setAttribute("user", currentUser);
+            req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
+            return;
+        }
+
+        if (phone != null && !phone.trim().isEmpty() && !phone.trim().matches("^(0[35789])[0-9]{8}$")) {
+            req.setAttribute("alert", "Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 chữ số (đầu số 03, 05, 07, 08, 09).");
+            req.setAttribute("user", currentUser);
+            req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
+            return;
+        }
+
         String avatar = currentUser.getAvatar();
 
         try {

@@ -30,10 +30,8 @@ public class WaitingController extends HttpServlet {
 				return;
 			}
 			req.setAttribute("username", u.getUserName());
-			if (u.getRoleid() == 1) {
+			if (u.getRoleid() != null && u.getRoleid() == 1) {
 				resp.sendRedirect(req.getContextPath() + "/admin/categories");
-			} else if (u.getRoleid() == 2) {
-				resp.sendRedirect(req.getContextPath() + "/manager/home");
 			} else {
 				resp.sendRedirect(req.getContextPath() + "/home");
 			}
@@ -43,10 +41,8 @@ public class WaitingController extends HttpServlet {
 			User u = service.get(username);
 			if (u != null && u.getIsActive() != 0) {
 				session.setAttribute("account", u);
-				if (u.getRoleid() == 1) {
+				if (u.getRoleid() != null && u.getRoleid() == 1) {
 					resp.sendRedirect(req.getContextPath() + "/admin/categories");
-				} else if (u.getRoleid() == 2) {
-					resp.sendRedirect(req.getContextPath() + "/manager/home");
 				} else {
 					resp.sendRedirect(req.getContextPath() + "/home");
 				}

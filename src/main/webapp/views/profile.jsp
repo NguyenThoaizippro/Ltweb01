@@ -73,8 +73,7 @@
                 <span class="role-badge">
                     <c:choose>
                         <c:when test="${user.roleid == 1}">Quản trị viên (Admin)</c:when>
-                        <c:when test="${user.roleid == 2}">Quản lý (Manager)</c:when>
-                        <c:otherwise>Khách hàng thành viên</c:otherwise>
+                        <c:otherwise>Khách hàng (User)</c:otherwise>
                     </c:choose>
                 </span>
             </div>
