@@ -101,15 +101,43 @@ public class ProductController extends HttpServlet {
                 }
             } catch (Exception ignored) {}
 
-            int pageSize = 6;
-            int total = productService.count();
+            String keyword = req.getParameter("keyword");
+            String catIdStr = req.getParameter("categoryId");
+
+            List<Category> categories = cateService.findAll();
+            req.setAttribute("categories", categories);
+
+            int pageSize = 6; // Yêu cầu hiển thị 6 sản phẩm 1 trang
+            int total = 0;
+            List<Product> list;
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String kw = keyword.trim();
+                total = productService.countSearch(kw);
+                list = productService.searchByName(kw, page, pageSize);
+                req.setAttribute("keyword", kw);
+            } else if (catIdStr != null && !catIdStr.trim().isEmpty()) {
+                try {
+                    int catId = Integer.parseInt(catIdStr.trim());
+                    total = productService.countByCategory(catId);
+                    list = productService.findByCategory(catId, page, pageSize);
+                    req.setAttribute("selectedCatId", catId);
+                } catch (Exception e) {
+                    total = productService.count();
+                    list = productService.findAll(page, pageSize);
+                }
+            } else {
+                total = productService.count();
+                list = productService.findAll(page, pageSize);
+            }
+
             int totalPages = (int) Math.ceil((double) total / pageSize);
             if (totalPages == 0) totalPages = 1;
 
-            List<Product> list = productService.findAll(page, pageSize);
             req.setAttribute("listProduct", list);
             req.setAttribute("currentPage", page);
             req.setAttribute("totalPages", totalPages);
+            req.setAttribute("totalCount", total);
             req.getRequestDispatcher("/views/product-list.jsp").forward(req, resp);
         }
     }

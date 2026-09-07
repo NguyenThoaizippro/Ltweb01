@@ -18,13 +18,16 @@ public class HomeController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final IProductService productService;
+	private final vn.iotstar.service.ICategoryService cateService;
 
 	public HomeController() {
 		this.productService = new ProductServiceImpl();
+		this.cateService = new vn.iotstar.service.impl.CategoryServiceImpl();
 	}
 
-	public HomeController(IProductService productService) {
+	public HomeController(IProductService productService, vn.iotstar.service.ICategoryService cateService) {
 		this.productService = productService;
+		this.cateService = cateService;
 	}
 
 	@Override
@@ -36,8 +39,10 @@ public class HomeController extends HttpServlet {
 		}
 
 		try {
-			List<Product> top10 = productService.findTopN(10);
-			req.setAttribute("top10", top10);
+			List<Product> top6 = productService.findTopN(6);
+			req.setAttribute("top10", top6);
+			req.setAttribute("top6", top6);
+			req.setAttribute("categories", cateService.findAll());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

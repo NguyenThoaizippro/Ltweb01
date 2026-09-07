@@ -13,5 +13,10 @@ public interface IProductService {
     List<Product> findAll(int page, int pageSize);
     List<Product> findTopN(int n);
     List<Product> searchByName(String keyword);
+    List<Product> searchByName(String keyword, int page, int pageSize);
+    int countSearch(String keyword);
+    List<Product> findByCategory(int categoryId);
+    List<Product> findByCategory(int categoryId, int page, int pageSize);
+    int countByCategory(int categoryId);
     int count();
 }

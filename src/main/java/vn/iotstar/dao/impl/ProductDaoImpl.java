@@ -125,6 +125,76 @@ public class ProductDaoImpl implements IProductDao {
     }
 
     @Override
+    public List<Product> searchByName(String keyword, int page, int pageSize) {
+        EntityManager em = JPAConfig.getEntityManager();
+        try {
+            String jpql = "SELECT p FROM Product p WHERE p.productName LIKE :keyword ORDER BY p.createDate DESC";
+            TypedQuery<Product> query = em.createQuery(jpql, Product.class);
+            query.setParameter("keyword", "%" + keyword + "%");
+            query.setFirstResult(page * pageSize);
+            query.setMaxResults(pageSize);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public int countSearch(String keyword) {
+        EntityManager em = JPAConfig.getEntityManager();
+        try {
+            String jpql = "SELECT COUNT(p) FROM Product p WHERE p.productName LIKE :keyword";
+            TypedQuery<Long> query = em.createQuery(jpql, Long.class);
+            query.setParameter("keyword", "%" + keyword + "%");
+            return query.getSingleResult().intValue();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Product> findByCategory(int categoryId) {
+        EntityManager em = JPAConfig.getEntityManager();
+        try {
+            String jpql = "SELECT p FROM Product p WHERE p.category.categoryid = :categoryId ORDER BY p.createDate DESC";
+            TypedQuery<Product> query = em.createQuery(jpql, Product.class);
+            query.setParameter("categoryId", categoryId);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Product> findByCategory(int categoryId, int page, int pageSize) {
+        EntityManager em = JPAConfig.getEntityManager();
+        try {
+            String jpql = "SELECT p FROM Product p WHERE p.category.categoryid = :categoryId ORDER BY p.createDate DESC";
+            TypedQuery<Product> query = em.createQuery(jpql, Product.class);
+            query.setParameter("categoryId", categoryId);
+            query.setFirstResult(page * pageSize);
+            query.setMaxResults(pageSize);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public int countByCategory(int categoryId) {
+        EntityManager em = JPAConfig.getEntityManager();
+        try {
+            String jpql = "SELECT COUNT(p) FROM Product p WHERE p.category.categoryid = :categoryId";
+            Query query = em.createQuery(jpql);
+            query.setParameter("categoryId", categoryId);
+            Number count = (Number) query.getSingleResult();
+            return count != null ? count.intValue() : 0;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public int count() {
         EntityManager em = JPAConfig.getEntityManager();
         try {

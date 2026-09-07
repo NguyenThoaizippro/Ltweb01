@@ -78,6 +78,31 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    public List<Product> searchByName(String keyword, int page, int pageSize) {
+        return productDao.searchByName(keyword, page, pageSize);
+    }
+
+    @Override
+    public int countSearch(String keyword) {
+        return productDao.countSearch(keyword);
+    }
+
+    @Override
+    public List<Product> findByCategory(int categoryId) {
+        return productDao.findByCategory(categoryId);
+    }
+
+    @Override
+    public List<Product> findByCategory(int categoryId, int page, int pageSize) {
+        return productDao.findByCategory(categoryId, page, pageSize);
+    }
+
+    @Override
+    public int countByCategory(int categoryId) {
+        return productDao.countByCategory(categoryId);
+    }
+
+    @Override
     public int count() {
         return productDao.count();
     }

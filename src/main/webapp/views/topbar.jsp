@@ -3,7 +3,7 @@
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <div style="margin-bottom: 20px; padding: 10px 20px; background-color: #f8f9fa; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <a href="${pageContext.request.contextPath}/home" style="text-decoration: none; font-weight: 700; color: #2563eb;">🛒 BT01 Shopping</a>
+        <a href="${pageContext.request.contextPath}/home" style="text-decoration: none; font-weight: 700; color: #2563eb;">toi di ban hang</a>
         <span style="margin: 0 10px; color: #cbd5e1;">|</span>
         <a href="${pageContext.request.contextPath}/product" style="text-decoration: none; color: #475569;">Sản phẩm</a>
     </div>
