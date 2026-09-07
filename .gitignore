@@ -49,12 +49,15 @@ cookie*.txt
 cookies*.txt
 
 # ==============================================================================
-# AI Assistant, Documentation & Local Memory
+# Documentation, AI Memory & Internal Guides (Chỉ đưa README.md lên Git)
 # ==============================================================================
 .agents/
 .superpowers/
-MEMORY.md
 docs/
+reports/
+*.md
+!README.md
+!readme.md
 
 # ==============================================================================
 # Operating System Junk Files
